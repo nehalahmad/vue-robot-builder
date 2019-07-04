@@ -56,23 +56,6 @@
         @partSelected="part => selectedRobot.base = part"
       />
     </div>
-    <div>
-      <h1>Cart</h1>
-      <table>
-        <thead>
-          <tr>
-            <td>Robot</td>
-            <td class="cost">Cost</td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(robot, index) in cart" :key="index">
-            <td>{{robot.head.title}}</td>
-            <td>{{robot.head.cost}}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 </template>
 
@@ -84,9 +67,22 @@ import CollapsibleSection from "../shared/CollapsibleSection.vue";
 
 export default {
   name: "RobotBuilder",
+  beforeRouteLeave(to, from, next) {
+    if (this.isAddedToCart) {
+      next(true);
+    } else {
+      /* eslint no-alert: 0 */
+      /* eslint no-restricted-globals: 0 */
+      const response = confirm(
+        "You haven't added your robot to your cart, are you sure you want to leave?"
+      );
+      next(response);
+    }
+  },
   components: { PartSelector, CollapsibleSection },
   data: () => ({
     availableParts,
+    isAddedToCart: false,
     selectedHeadIndex: 0,
     selectedLeftArmIndex: 0,
     selectedRightArmIndex: 0,
@@ -126,7 +122,8 @@ export default {
         robot.torso.cost +
         robot.base.cost;
 
-      this.cart.push({ ...robot, cost });
+      this.$store.commit("addRobotToCart", { ...robot, cost });
+      this.isAddedToCart = true;
     }
   }
 };
